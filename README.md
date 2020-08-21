@@ -2,7 +2,7 @@
 
 ---
 
-    Disclaimer: No guarantee for correctnes or completeness. No official summary.
+    Disclaimer: No guarantee for correctnes or completeness. No official summary. Figures from the lecture. 
 
 ---
 
@@ -45,6 +45,7 @@ CC mostly is used to get a notion of normality.
 
 
 ## Parametric Classification
+---
 
 ### Bayes Decision Theory
 
@@ -84,6 +85,7 @@ $\eta _i$ = mean vector
 ### The curese of Dimensionality
 
 ## Non-parametric classification
+---
 * Parzen Window
 * K-nearest neighbours
 * Linear discriminants (general)
@@ -111,6 +113,7 @@ with
 
 
 ## Unsupervised Classificatin/ Clustering
+---
 
 * Hierarchical Clustering
   * Choose number of classes ($n - c_{stop}$). initialize c = n = number of data points
@@ -119,6 +122,7 @@ with
 # 04 - Machine Learning 1 + 2
 
 ## Neural Networks
+---
 
 ### General Information on NNs
 
@@ -224,6 +228,7 @@ BP is computational intensice during training. Ideas for improvement:
 * efficient architecture
 
 ## Towards Efficiency
+---
 
 * skip training samples during back propagation
   * that are already well classified
@@ -253,6 +258,7 @@ Idea of BN: normalize each input x with the mean/expected input of the layer and
 => Higher learning rates and faster convergence
 
 ## Error and Loss Functions
+---
 * MSE
 * Cross-Entropy Loss
 * Mc Clelland error
@@ -285,6 +291,7 @@ where
 $E = - \sum_j ln(1 - (y_j - target_j)^2)$
 
 ## Activation Functions
+---
 
   $y_j = f(x_j)$ for neuron j
 
@@ -349,6 +356,7 @@ E = Set of all Edges/ Connections
 * ...
 
 ## Generalisation
+---
 
 Apparently the following equations are meant to approximate the test error given the training error, the number of parameters and the number of training samples.
 
@@ -394,6 +402,7 @@ A very popular method for generalisation is dropout training. Here during traini
 # 07 - Unsupervised Learning
 
 ## Autoencoders
+---
   * Linear Autoencoder
     * Iddea: Less hidden layer neurons than input or output neurons
     * Similar to linear compression method like PCA
@@ -467,6 +476,7 @@ To force the hidden layer to follow a distribution the loss function can be some
 And that's all what's noted in the slides. Seems amazingly unimportant.
 
 ## Structure Prediction
+---
 * Idea: Given only part of the object predict the remaining => autocompletion with flexible NN architectures.
 * These tasks leads to RNNs or CNNs/TDNNs or Transfer and Self-attention NNs.
 * In the context of language a (neural) language model is mentioned. => How likely is a sentence/ how much sense does it make. Built on some input text/ language
@@ -477,7 +487,7 @@ Structure prediciton is and explicit and flexible method to deal with estimating
 # 08 Hopfield Nets and Bolzmann Machines
 
 ## Hopfield Nets
-
+---
 ### **Binary Hopfield Nets**
 
 * single layer of fully connected units
@@ -518,6 +528,7 @@ Structure prediciton is and explicit and flexible method to deal with estimating
 
 
 ## Boltzmann Machines
+---
 See also previous lecture on restricted Boltzman machines. 
 
 * stochastic RNN
@@ -549,7 +560,7 @@ See also previous lecture on restricted Boltzman machines.
 * comnputational expensive
 
 ## Restricted Bolzmann Machines
-
+---
 Idea: No connection between input units and no connection between hidden units. => "Layer"
 
 Usage: predict a user's rating for a film.
@@ -561,8 +572,116 @@ Persistant Contrastive Divergence:
 
 
 ## Deep Belief Networks
+---
 * very deep networks
 * hidden layers can be pretrained as autoencoders
+
+# 09/10/11 - Speech Recognition with Time Delayed Neural Networks (TDNN)
+
+
+
+Speech modeling approaches:
+  * acoustic phonetic level
+  * word level
+  * sentence level
+
+Challenges in Speech recognition
+  * ambiguousity
+  * compositionality
+  * prone to "side effects" like emotino, age, gender, accent, dialect, ...
+  * multilingual
+  * latent content and meaning
+
+  * Speech is not static
+  * Shift (for example pitch, time delay)
+
+
+Encoding of speech
+* *"Formats"* := the resonance frequencies of the vocal tract transfer function
+* time-frequency plots
+
+
+## Time-Delay Neral Networks
+---
+  * Multilayer, nonlinear
+  * \+ enable shift invariant learning!
+    * hidden units learng features independent of precise location in time (or space)
+  * for images this principle is adapted in Convolutional neural networks
+  * weights among the different windows of one layer are shared.
+
+<img src="figures/09_20.png" style="height:300px;"/>
+
+Then there's a lot info on how the networks were build, e.g. that a "bdgptk"-classifier network was build from the hidden units of a "bdg" and a "ptk"-classifier network.
+
+Some examples on where CNNs are applied today, Imagenet, AlphaGo, ...
+
+## Word Models
+---
+* Problems
+  * time alignment
+  * endpoint detection
+  * large vocabularies
+  * compositionality of speech and language
+
+* Approaches/ Solutions
+  * NN-HMM-Hybrids
+  * Multy State TDNN (MS-TDNN)
+  * RNNs
+  * End-to-End-Models
+
+Some ideas to conquer time alignment:
+* Linear Sequence Alignment
+  * compute the distance of a word template to a reference template (=Sum of all Frame-to-Frame distances)
+  * use distance to derive an alignment between the word and the reference
+  * \+ can handle different speaking rates
+  * \- cannot handle varying speaking rates during same utterance => Non-Linear Alignment needed
+* Time Warping = Alignment through time
+
+<img src="figures/10_11.png" style="height:400px;"/>
+
+
+## Speech Recognition
+---
+Componentes of a speech recognition system:
+
+<img src="figures/09_64.png" style="height:300px;"/>
+
+* Recognizer components are all NNs
+
+Goal of Speech Recognition:
+  * Given acoustic data A
+  * fined word sequence W
+  * such that $P(W | A) = \frac{P(A | W) * P(Ww)}{P(A)}$ is maximized
+
+### Hidden Markov Models
+A very vague reminder on HMMs:
+
+* structure: <img src="figures/09_70.png" style="height:300px;"/>
+* Foward Algorithm: Sum
+* Viterbi Algorithm: Max
+  * Viterbi maximized the probability of a state sequence Q
+* Both find some state seqzence Q
+
+### Hybrid Models
+
+**#### NN-HMM Hybrids**
+
+  * NN for classification of phonemes
+    * aA NN computes the posterior class probability $P(w_j | data)$
+  * HMM for alignment and integration into words
+
+<img src="figures/09_70.png" style="height:300px;"/>
+
+**#### MD-TDNN**
+
+<img src="figures/10_39.png" style="height:300px;"/>
+ 
+ ### Recurrent Neural Networks
+ cf. section 16
+
+ ## Language Models
+ * some info on n-grams and sequence probabilities
+ * Quaity Measure: LogProb: $H(W) = - \frac{1}{n} \sum_{i=1}^n \log_2 Q(w_i| \psi(w_1, ... w_i))$
 
 # 16 - Recurrent Neural Networks
 
