@@ -680,8 +680,10 @@ A very vague reminder on HMMs:
  cf. section 16
 
  ## Language Models
+A language model is a probability distribution $p(w_i|w_1, ..., w_{i-1})$ for a word/ character w_i given its history as n-gram.
+
  * some info on n-grams and sequence probabilities
- * Quaity Measure: LogProb: $H(W) = - \frac{1}{n} \sum_{i=1}^n \log_2 Q(w_i| \psi(w_1, ... w_i))$
+ * Quaity Measure: LogProb: $H(W) = - \frac{1}{n} \sum_{i=1}^n \log_2 Q(w_i| \psi(w_1, ... w_{i-1}))$
 
 # 16 - Recurrent Neural Networks
 
