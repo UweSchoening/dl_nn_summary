@@ -576,9 +576,11 @@ Persistant Contrastive Divergence:
 * very deep networks
 * hidden layers can be pretrained as autoencoders
 
-# 09/10/11 - Speech Recognition with Time Delayed Neural Networks (TDNN)
 
 
+
+
+# 09/10 - Speech Recognition with Time Delayed Neural Networks (TDNN)
 
 Speech modeling approaches:
   * acoustic phonetic level
@@ -684,6 +686,254 @@ A language model is a probability distribution $p(w_i|w_1, ..., w_{i-1})$ for a 
 
  * some info on n-grams and sequence probabilities
  * Quaity Measure: LogProb: $H(W) = - \frac{1}{n} \sum_{i=1}^n \log_2 Q(w_i| \psi(w_1, ... w_{i-1}))$
+
+
+
+# 11 Speaker Independence
+
+General approaches:
+  * Build one speaker independent model
+    * hard to separate
+  * Build many speaker dependent models
+    * not enough data => bad generalizatino
+
+## Methods to achieve speaker independence
+  * Model invariance towards
+    * frequency shift
+    * tilt
+    * compression, ...
+    * 
+  * Adaption
+    * How fast does ne listener realize a speaker change/ what speaker is speaking?
+    * humans fast: in one or two syllables
+    * 
+  * Normalization
+    * correcting environment variables
+    * mapping a speaker to a *Standard Speaker*, normalizing speakers
+
+  * i-vectors
+    * i-vecotrs are Eigenvecotr derived informations on a speaker
+    * i-vectors can be extracted from a spoken sequence and be used to characterize a speaker.
+
+### SAT - Speaker Adaptive Training
+1. Train DNN as usual
+2. Train an i-vector NN that normalized the i-vector of a speaker. Keep the DNN parameters fixed.
+3.  Train the DNN parameters in the new feature space created by the i-vector NN. Keep i-vector NN parametes fixed.
+
+<img src="figures/11_23.png" style="height:300px;"/>
+
+
+### Multi-Speaker Reference Model
+Idea: Have multiple language/ speech recognition models, each trained on a different speaker. Use a general model that first classifies the speaker and then uses the model.
+
+<img src="figures/11_25.png" style="height:300px;"/>
+
+Further: Meta-Pi Net
+Don't try to distinguish the speaker, but try to optimize the performance of the overall error/ loss of the single speaker dependent models
+
+<img src="figures/11_26.png" style="height:300px;"/>
+
+### Multi-Lingual Model
+**Cross Language DNNs with Language Universal Features**
+Idea: Borrow knowledge from one language to train another language model.
+
+* Language code:
+  * LID Language identity
+    * 1-hot vector encoding of identity
+  * LFV Language Feature Vector
+    * Encoding of a language's properties
+    * how it sounds, how it is articulated
+
+<img src="figures/11_33.png" style="height:300px;"/>
+
+=> A network that can dynamically switch between different language models
+
+
+# 12 - Handwriting Recognition
+
+**Characterisation**
+
+* offline recognition
+  * information
+    * coordinates x,y
+    * tilt
+* online recognition
+  * additional information:
+    * coordinates x,y fand time t
+    * pressure
+    * pen_down and pen_up events
+    * velocity
+
+<img src="figures/12_55.png" style="height:300px;"/>
+
+## On-line recognition
+
+### Approaches
+* Elastic matching
+* Break down into stroke levels
+  * '|' + '-' + '|' = H
+  * problem: complex rules
+* explicit segmantation
+* elastic matching
+* input and output segmenation
+  * often borders are hard to distinguish
+  * allows to introduce some a priori knowledge, e.g. about statistical distribution of letters
+
+### Normalization
+Remove undesired variability in online handwriting
+  1. Baseline normalization (deskewing)
+     * baseline ist detected using Expectation Maximization  
+     * rotate till baseline is horizontal 
+  2. bezier normalization (smoothing)
+     * bezier algorithm approximatex missing data points
+     * moving average used to delete noise and connect points smoothly
+  3. Skew normalization
+  4. size normalization
+     * sescaling 
+  6. resampling from temporal to spatial equidistance
+     * resample points to make them have equal distance to each other 
+  7. removing delayed strokes
+     * like i dots or t bars that occur temporally delayed 
+   
+<img src="figures/12_72.png" style="height:300px;"/>
+
+### Word Modeling
+Again something on Markov Chains, Viterbi Algorithm and MS-TDNNs.
+Also Flat Search is mentioned.
+
+And a Tree Seach Algorithm.
+
+## Off-line recognition
+* Sign translatino
+* like object detection + image recognition + language recognition (+ translation)
+
+
+
+
+# 13 - Computer Vision
+
+## The Computer Vision Task
+* Discriminative Task
+* Generative Task
+  * Image Transfer
+  * Enhancement
+  * Generation
+
+
+
+## Object Recognition
+* Classification
+* Localization
+* Detection
+* Segmentation
+
+### Classifiation
+Typical framework:
+
+<img src="figures/13_06.png" style="height:140px;"/>
+
+* Feature examples
+  * SIFT - shift invariant from transformation
+  * HoG - Histogram of gradients
+  * RIFT - radiation invariant from transformation
+
+### Shift invariance
+Def: "The outputs are independent to the shift along one or several dimensions of the feature space."
+
+<img src="figures/13_18.png" style="height:300px;"/>
+
+### CNN - Convolutional Neural Network
+<img src="figures/13_20.png" style="height:250px;"/>
+
+Consists of
+  * Convolutional Layers
+    * using filters
+    * can have activation functions
+      * often ReLU or tanh
+    * one convolutional layer shares a weight matrix throughout its filters
+  * subsampling layers
+    * aggregate convoluted features to reduce the number of parameters
+    * does not learn any parameters
+    * aggregated regions often do not overlap
+    * popular aggregations
+      * mean
+      * max
+      * probabilistic pooling
+  * fully connected layers towards output
+    * typical MLP procedure with 
+      * input $x$
+      * weight matrix $W$ 
+      * bias $b$
+      * and actication function $f(W*x + b)$
+
+**CNN for take away:**
+* A CNN in contrast to a MLP can deal with shift-variance of features in time and space.
+* They also reduce the number of parameters through convolution.
+* next layer can be resized choosing convolution or pooling parameters
+  * kernel size
+  * number of kernels
+  * padding
+  * stride
+  * convolution:
+
+  $height = \Bigg\lfloor \frac{h_{prev} - f + 2 * p}{s} \Bigg\rfloor + 1$
+
+  $width = \Bigg\lfloor \frac{w_{prev} - f + 2 * p}{s} \Bigg\rfloor + 1$
+  * pooling
+
+  $height = \Bigg\lfloor \frac{h_{prev} - f}{s} \Bigg\rfloor + 1$
+  
+  $width = \Bigg\lfloor \frac{w_{prev} - f}{s} \Bigg\rfloor + 1$
+
+
+### Learning hierarchical features
+* Learned features can be seen as building blocks of an image
+* High level = more conntent
+* Low level = more detailed information, concrete local behaviour/ pixels
+* Use transfer learning on those builing blocks
+
+#### Transfer learning
+1. Use pre-trained network
+2. remove output layers
+3. fix pretrained layers and only train new layers and added new output layers
+
+#### Neural Style Transfer
+The idea of hierarchical features can also be used for style transfer. E.g. transfer the features learned in a low-level layer to another input:
+
+* Naive idea: optimize loss
+
+  $Loss L = \alpha * L_{content} + \beta * L_{style}$
+
+  * Problem: optimization is slow
+* NN idea: train a separate NN to generate a style transfer image
+
+<img src="figures/13_67.png" style="height:250px;"/>
+
+
+## Single Shot Learning
+Problem: Face Recognition. New face is new class with only one data sample
+
+Approaches:
+* Siamese Network
+  * Run same network with two different inputs
+    * compare output
+    * if distance small, same class
+
+
+## Object Detection
+
+<img src="figures/13_76.png" style="height:250px;"/>
+
+* For example sliding window
+* Recursive CNN
+
+## Semantic Segmentation
+* Yolo
+* Also Sliding windows
+
+
+
+
 
 # 16 - Recurrent Neural Networks
 
