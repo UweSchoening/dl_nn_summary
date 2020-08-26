@@ -182,7 +182,10 @@ These parameters are usually chosen by the network architect
 * ART
 * TDNNs / Convolutional Neural Networks
 
-### Learning with Backpropagation
+## Learning Techniques for NNs
+Basically everything is Backpropagation (BP). However, there are some adaptions that make it more efficient.
+
+### 1. Backpropagation
 
 Each nueron computes $y = f(x)$ where
 * $x_j = \sum_i y_i * w_{i,j}$  : imput to neuron j
@@ -211,10 +214,68 @@ BP approach:
       $w_{ij}(t+1) = w_t + \Delta w_{ij}(t)$
 ---
 
+### 2. Stochastic, Batch and Mini-Batch Gradient Descent
+The critical point is, how much of the forward passed data shall be used to compute the gradient and to update a weight.
+Meaning, shall an update of thei weights occur after each foward pass, after some (taking the average gradients) or after the whole data is classified/ passed forward once? There are also more elaborate methods like Adam and co.
 
-### Neural Networks as Autoencoders
+For them look [here](https://ruder.io/optimizing-gradient-descent/).
 
-### General Problems
+In **stochastic gradient descent** **one** data sample is selected at **random** and proagated through the forward pass. After the propagation the gradient is computed. The computed gradient is then used to update the weights.
+
+In **Batch Gradient Descent** first **all data** is passed forward through the network and all gradients are computed. The average of all gradients is then used to **update the weights once** after all data is passed through.
+
+**Mini-Batch Gradient Descent** is the mixture of both taking some data inputs, passing them forward, computing their gradients, taking their average and updating the weights with that after each batch is passed through.
+
+
+### 6. Adagrad
+Adaptive Gradient Algorithm.
+
+Idea:
+  * individual per parameter learning rates
+
+### 7. Adadelta
+Only looks at past set number of gradients for update
+
+### 8. RMSprop
+Root Mean Square Porpagation
+
+Idea:
+  * individual, adaptive per parameter learning rates
+  * rates are adapted based on the average of recent **first moment** of the gradients (first derivation)
+
+RMSprop is actually nearly the same as Adadelta.
+
+### 5. Adam
+The name *Adam* is derived from *adaptive moment estimation*.
+
+Idea:
+  * individual, adaptive per parameter learning rates
+  * rates are adapted based on the **first and second moment** derivative (momentum) of the gradients
+    * an exponential moving average is calculated based on the gradient and the squared gradient
+
+Parameters:
+  * $\beta _1$ and $\beta _2$ control the decay of past learning rates for the moving average of those
+  * $\alpha$ initial learning rate
+
+Advantages:
+  * easy to implement
+  * computational efficient
+  * little memrory requirements
+  * invariant to diagonal rescaling of gradiants
+  * well suited for problems with
+    * many parameters or large data
+    * noisy or sparse gradients
+    * non-stationary objectives
+
+
+
+Adam is supposed to combine advantages of AdaGrad and RMSprop
+
+
+
+## Neural Networks as Autoencoders
+
+## General Problems
 * Overfitting/ Underfitting
 * Generalization
 
@@ -935,6 +996,70 @@ Approaches:
 
 
 
+
+
+
+
+
+# 14 Parallelism, Hardware Acceleration and Frameworks
+* Parallelism:
+  * User vector oerations instead of for loops (SIMD operations)
+  * compute the results of each row in parallel (Libraries such as BLAS)
+  * Use GPUs for the parallel stuff
+* Frameworks abstract from GPU usage
+  * Static computational graph
+    * graph is created ahead of time and then executed for some data
+  * dynamic graph builders
+    * models are written like regular programs
+  * Automatic differentiation
+    * symbolic differentiation (= analytical) has long expressions and a lot of repetitions
+    * numeric differentiation is slow and has rounding errors
+    * idea:
+      * break down programm into a sequence of primitives with known derivative
+      * during forward pass store the intermediate results
+      * during backward pass use the known rules on how to compute the gradients to simply concatenate the gradient mechanically.
+
+<img src="figures/14_08.png" style="height:150px;"/>
+
+
+
+# 15 - Audio-Visual Speech (Lipreading) and Focus of Attention
+
+  * McGurk effect: audio and visual informatino are fused
+
+Motivation
+  * use lipreading to improve acoustic speech recognition
+
+Result
+  * lip reading supported acoustic speech recognition is better with more environmental noise
+
+## Tracking
+  * OF faces
+    * using color model
+      * \+ fast, orientation invariant, stable representatin
+      * \- device dependant user dependant envornment dependent
+    * using fix points like eyes, nose, mouth corners
+  * Of lips
+    * search for eye pupils
+    * (localize nostrils)
+    * predict search region for lip corners
+
+## Fusion of Information
+
+* word level
+* phoneme level
+* feature level
+
+## Tracking the Focus of attention
+* in meetings
+* in classrooms
+
+Main questions
+* where is someone looking?
+* what is he/she looking at?
+* is that person awake?
+
+
 # 16 - Recurrent Neural Networks
 
 * Used for generative language models with a conditional probability distribution for each word or character
@@ -996,6 +1121,7 @@ with
 
 
 * Sequence-to-Sequence
+  * See section 17
 
 ## Back Propagation Through Time (BPTT)
 
@@ -1011,7 +1137,7 @@ Problem:
     * If the max Eigenvalue of $W^H > 1$ => $\frac{\partial L}{\partial H_T}$ is likely to explode!
     * If < 1 => vanish
 
-Simple Solutions for Vanishing/ exploding Gradients
+Simple Solutions for exploding Gradients
 * Gradient Clipping:
 
   With  $g = \frac{\partial  L}{\partial w}$ do
@@ -1080,3 +1206,413 @@ Operations on memory cells:
   * with $w_i$ beeing the one-hot-vecotrs of each word/ character in V. $w_i = [0,0,...,1,0,0,...]$
 * **Feature embedding** or **word embedding** then means a **linear transformation $E$** of the high dimensional, sparse vector $w_i$ to a more dense vector $e_i$. 
   * $e_i = W_E * w_i$
+
+
+
+# 17 - Sequence-to-Sequence Model
+
+Standard loss for RNNs: Cross-Entropy Loss
+
+$L_{Ce} = - \sum_i y_i * \log(p_i)$
+
+Difference between Cross-Entropy Loss and Mean Square Error
+  * CE assumes an underlying **Multinomial** distribution
+  * MSE assumes an underlying **Gaussian** dristribution
+    * $MSE = \sum_i (y_i - p_i)^2$
+
+## Application of LSTMs
+Principle: Concatenate two RNNs via the last hidden layer of the first.
+Usage:
+  * Sentence Completion
+  * Translation!
+
+  <img src="figures/17_32.png" style="height:350px;"/>
+
+Works well for short sentences, but bad for longer > 10 words.
+
+Funny trick: reversing the source sentence increases performance
+
+* Encoder Decoder with LSTMs
+  * Work also for images
+  * problems
+    * representation efficiency
+    * gradient starvation
+
+  <img src="figures/17_51.png" style="height:350px;"/>
+
+## Sequence-to-Sequence with attention
+Goal: find the alignment between encoder and decoder.
+
+Typical RNN Question: "Which word is the most likely one to appear after this sequence."
+Encoder-Decoder Question: "Which wird is responsible to generate the first word"
+
+Idea use additional attention node C that sees all hidden states of the encoder
+
+  <img src="figures/17_60.png" style="height:350px;"/>
+
+where
+
+* $C_0 = \sum_i \alpha _i^0 * H_i^e$
+* $\alpha _i^0$ is the relevance of state $H_i^e$ for the attention state $0$
+  * $\alpha _i^0 = W_2 * \tanh(W_1 * [H_0, H_i^e] + b_1)$
+  * normieren auf $\sum_i \alpha _i = 1$: softmax
+    * $\alpha \larr softmax(\alpha)$
+* $\hat H_t$ is the combination of $C_t$ and $H_t$ and can be realized as e.g.
+  * $\hat H_t = \tanh(W * [C_t, H_t])$
+  * a RNN
+
+Advantages of Attention
+  * no gradient starving
+  * attention weights allow heat map to check if alignment is correct
+
+Other applications
+  * Machine Translation
+  * Speech Recognition
+    * Listen, attend, spell
+  * Image description generatin
+    * also, point out focus of an image description
+  * Music Automation transcription
+  * automatic summarization
+
+S2S is not good at
+  * Conversational bots
+
+
+# 18 - Transformer model - Attention is all you need
+
+Inventions that accelerated Deep Learning
+
+## Dropout
+* Mask some neurons during training.
+  * All connections to/ from these neurons are ignored
+  * their weights are not updated
+  * they are still used during testing
+  * some scaling of the masked input-layer must be applied to shift the expected size between training (smaller) and testing (bigger)
+    * e.g. scale training with $\frac{1}{1-p}$
+    * or scale testing with $p$
+
+## Batch Normalization
+
+* Problem: During training updating a lower layer changes the input distribution of the next layer
+* Idea: Mean and variance normalization step between layers
+* Advantages: 
+  * faster training
+  * gradients less dependent on scale of parameters
+  * allow higher learning rates
+  * combat saturation problem
+
+Normalizatio:
+
+$\hat X = \frac{X - \mu}{\sqrt{\sigma^2 + \epsilon}}$
+
+Scale and Shift
+
+$X^N = \gamma * \hat X + \beta$
+
+### Other Normalizations
+as alternatice to (Mini-)Batch Normalization
+
+* Layer Normalization
+* Instance Normalization
+* Group Normalization
+
+<img src="figures/18_19.png" style="height:200px;"/>
+
+
+## Residual Learning
+Some connections added to the network which skip single layers...
+
+<img src="figures/18_23.png" style="height:250px;"/>
+
+
+
+## Attention Mechanism
+
+* Encoder Decoder can be seen as a Neural Turing Machine
+* The weihgts $\slpha$ fopr generating the attention states C are generated with a Neural neutwork
+
+Usage/ Idea of attention
+* detect correlation between 
+  * source and target words
+  * natural language and image features
+  * questions and memory entries
+* Use learnt coefficients $\alpha$ to detect these
+* There is always some query and some key-value pairs as data
+
+
+
+### Obsessions with Modeling
+1. Computation efficiency
+    * Use Deep TDNN with kernels that see two words => Residual Connections 
+
+<img src="figures/18_44.png" style="height:200px;"/>
+
+Desiderata = what is missing but wished for
+* use parallel operations
+* preserve resolution
+* forward and backward path should be short
+* runtime should be linear
+
+## The Transformer Model
+ Sequence Modelling with Attention
+
+Use self-attention to model patterns in sequences. Self-attention means that the own input $X$ is used as query $Q$ as well as as key $K$ and value $V$ pair. $Q$, $K$ and $V$ are all some sort of additional hidden states. Hoewever the hidden state $H$ is derived from the $\alpha$s and the data-values $V$.
+
+<img src="figures/18_54.png" style="height:200px; float: right;"/>
+
+  $Q_t = W^Q * X_t + b^Q$  <br>
+  (red)
+
+  $K_t = W^K * X_t + b^K$ <br>
+  (grey)
+
+  $V_t = W^V * X_t + b^V$ <br>
+  (green)
+
+Matching score $e_{ij}$:
+
+  $e_{ij} = Q_i * K_j$
+
+<img src="figures/18_55.png" style="height:150px; float: right;"/>
+
+  $\alpha _{ij} = sfotmax(e_{ij}) = \frac{\exp(e_{ij})}{\sum_k^N \exp(e_{ij})}$
+
+Attention hidden state:
+
+  $H_{att, t} = \sum_k^N \alpha _{tk} * V_k$
+  <br>
+
+<img src="figures/18_56.png" style="height:150px;"/>
+
+<img src="figures/18_57.png" style="height:400px; float: right;"/>
+
+More hidden layers can be added on top of $H_{att, t}$:
+
+$H_R = X + H_{Att}$
+
+$H_{drop} = Dropout(H)_r$
+
+$H_{norm} = LayerNorm(H_drop)$
+
+<br><br><br><br><br><br><br><br><br><br><br><br>
+
+A sequence model with attention
+
+<img src="figures/18_62.png" style="height:400px;"/>
+
+
+Problems with attention based sequence models
+* does no take into account word positions
+
+Workaround:
+* add temporal/ positional information
+  * by adding sine/ cosine
+
+Some info
+* BERT = Pretrained self-attention models for unsupervised learning
+* Transformer is 
+  * computationally fast (compared to RNN or CNN)
+  * very memory expensive
+
+
+
+
+
+
+# 19 - Natural Language Processing (NLP)
+
+NLP Tasks
+
+<img src="figures/19_03.png" style="height:400px;"/>
+
+* Named Entity (NE) recognition
+* So NEs can be replaced with a single token
+
+## A dialog system
+
+<img src="figures/19_10.png" style="height:300px;"/>
+
+* ASR
+  * NN
+* Text proprocessing for NLU
+  * NE recognition
+  * byte pair encoding
+  * word embedding => reduce dimensionality and make space more dense
+* DM
+  * e.g. ask if an object is ambiguous
+* NLG
+  * NN
+
+## End-to-End Dialog System
+* error propagates better thorugh the system
+* no intermediate dataset needed
+* does not throw away information like the pitch of voice
+
+<img src="figures/19_23.png" style="height:150px;"/>
+
+Models for End-to-End Dialog learning
+* Encoder Decoder with Attention
+* Hierarchical Recurrebnt Encoder-Decoder
+* Transformer Model
+* Memory Networks
+* Dynamic Networks
+
+### Memory Networks
+
+<img src="figures/19_32.png" style="height:400px;"/>
+<img src="figures/19_33.png" style="height:400px;"/>
+
+### Dynamic memory networks
+
+<img src="figures/19_36.png" style="height:400px;"/>
+
+* GRU
+* Beam Search
+
+
+# 20/21 - Reinforcement Learning
+
+# 22 - Generative Adversarial Networks (GANs)
+
+# 23 - Adversarial Examples
+
+# 24 - Neural Networks for Control
+
+# 25 - Summary Lecture
+
+* Perceptron
+  * linear separator $g(x) = \sum_{i=0}^n w_i * x_i$; $x_0 = 1$
+  * $y_i \in  \{-1, 1\}$
+  * $y_i * g(x_i) \leq 0$ => wrong class
+  * update:
+    * for all wrong classes
+      * $w_i = w_i + y_i * x_i$
+      * so label -1 => w = w - x
+
+* MLP
+  * input layer $X$
+  * nonlinear activation function
+    * ReLU
+    * sigmoid
+    * tanh
+    * softmax
+  * hidden layer $H$
+    * $h = f(W*X + b)$
+    * $h_j = f(\sum_i w_{ij} * x_i + b_j)$
+  * output layer $O$
+    * normalize output e.g. with softmax for porbabilies
+  * Loss functions
+    * Cross-entropy: multinomial distribution of O and Y
+    * Mean-square-error: gaussion distribution ...
+    * Binary Cross-entropy: prediction is independent binary unit (e.g. pixels)
+
+* Stochastic Gradient Descent
+  * is analgroithm how to update weights
+  * learning rate $\alpha$
+  * update $w_{t+1} = w_t - \alpha * \frac{\partial L}
+    * minus because of "descend"{\partial w_t}$
+  * Other variants like Batch and Mini-Batch SGD
+
+* Backpropagation
+  * is an algorithm to efficiently compute gradients that uses
+    * chain rule
+    * dynamic programming
+  * forward pass and backward pass
+    * forward pass needs to store the activations of hidden states
+  * there are others like numerical gradient calculation
+
+* TDNN
+  * actually does some convolution on time data
+
+* CNN
+  * convolutional layer
+    * filters/ kernels and feature maps
+      * feature map = output of convolutional filter 
+    * $k$ = number of kernels/ filters
+    * one kernel/ filter applies to all channels if size is $f * f * c$; $c$ = number of channels
+      * it then creates one feature map from all channels
+      * probably by adding the resulted feature maps
+    * \# of parameters per conv. layer = $f*f*c*k$
+  * pooling layer
+
+* RNN
+  * one input at a time
+  * hidden state stores info on past input
+  * Elman and LSTM
+  * weight sharing over time
+
+* BPTT
+  * Many-to-One
+  * One-to-Many
+  * Many-to-Many
+  * gradient vanishing and exploding
+    * vanishing: LSTM
+    * exploding: clipping
+
+* S2S
+  * use two RNNs
+    * one to encode the input in a hidden state
+    * one for the task like translation (decode)
+  * modular constructed
+    * can combine CNNs and RNNs
+  * suffer from compression of the encoder
+
+* Attention and the Transformer Model
+  * attention means that the hidden states of the encoder are accessible from each state in the decoder  via an attention state
+  * Transformer is a realiisation of the attention idea
+  * \# of operations needed to relate two arbitrary points in the sequence = 
+    * LSTM: $O(n)$
+    * CNNs/TDNNs: $O(log_k n)$
+    * Attention: $O(1)$
+  * computational complexity (if all matrix multplications have constant cost)
+    * LSTM: $O(n)$
+    * CNNs/TDNNs: $O(1)$ (because it basically is one matrix multiplication)
+    * Attention: $O(1)$
+
+
+* Unsupervided Learning and Auto Encoder
+  * Auto-Encoder and Variational AE
+  * Unsupervised Learning is somewhat interpreted as superwised learning to reconstruct the input 
+  * VAE introduces stochastic elements in BP
+
+
+* Generalization
+  * Underfitting
+    * Model too general (wrong architecture)/ not enough capacity/ not trained enough
+    * => better architecture with higher capacity
+  * Overfitting
+    * Model too complex/ trained too long on training data
+    * many solutions, mostly punish and restrict the network
+  * Weight Decay
+    * minimize the magnitude of the weights
+    * $L_{wd} = \beta * \sum_i w_i^2$
+    * make network sparser
+  * Dropout
+    * hidden weights are masked out randomly during training
+    * always makes the network train longer with higher training error
+    * needs some scaling when testing path
+    * introduces restrictions
+  * Batch Normalization
+    * Noise is eliminated
+
+
+* Adaptive Learning Techniques
+  * SGD with Momentum
+  * Adagrad
+  * RMSProp
+  * Adam
+    * the more momentums are used and stored, the less space efficient the algorithms are
+
+
+Low Priority Section
+* Neural applications
+  * Speech applications
+  * Hand-writing recognition
+  * NLP
+* GANs and adversarial attacks
+
+
+Gneral comments on exam tasks
+* CNN Question
+  * The combination (3, 1, 1) means f=3, stride= 1, padding = 1
+    * This combination for a filter preserves the input resolution
