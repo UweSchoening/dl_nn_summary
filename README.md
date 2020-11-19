@@ -1471,12 +1471,92 @@ Models for End-to-End Dialog learning
 
 
 # 20/21 - Reinforcement Learning
+= Learn to use a good sequence of actions
+
+
+---
+Agenda:
+## RL
+* Markoc Decision Process (MDP) and Optimality
+* Ingredients of an RL Agent
+* Algorithm Taxonomy
+
+## Optimal Control: Solving MDP
+* Value Iteration
+* Policy Iteration
+
+## Value-based Methods
+* TD-Learning
+* Q-Learning
+---
+
+## RL
+
+* Can be seen as a Markov Decision Process
+
+<img src="figures/20_08.png" style="height:200px;"/>
+
+Components
+* Q-Function
+* V-Function
+* Transition function p(s' | s, a)
+* Reward function r(s, a)
+
+<img src="figures/20_18.png" style="height:400px;"/>
+
+
+## Optimal Control: Solving MDP
+
+## Value-based Methods
+
 
 # 22 - Generative Adversarial Networks (GANs)
 
 # 23 - Adversarial Examples
 
 # 24 - Neural Networks for Control
+Situation: The thing to be controlled is the "plant". The input of the plant is $u$ the output is $y$ and the desired output is $y^*$. E.g. for robot arm $u$ would be the joint angles, $y$ would be the TCP (Tool Center Point) position.
+
+General idea: use a NN to learn a controller. A controller is the part which defines what input $u$ a plant must get to behave in a desired way $y$.
+
+Two models useful for this task:
+* a forward model: given $u$ calculate the predicted output $\hat y$
+* a reverse model: given some output $y$ calculate the given input $u$. (This is actually what the controller does)
+
+## Training a controller
+... is difficult because there may be more than one legit solution (like ambiguity of joint angles).
+So training with normal Gradient descent, which would try to learn the average solution, does not work, since the average solution actually is no solution. Example: Two joint angles lead to the same TCp position. However, their average leads to a totally different position.
+
+So other training techniques are required like...
+
+**Distal Learning Approach**
+* First train the forward model with normal BP
+* Freeze forward model
+* Use Forward model to propagate error through it to the controller or inverse model
+* Train controller 
+
+Distal learinng is *goal directed* meaning it is only good in the region you care about since it does not sample the whole space... whichever that is.
+
+Also the forward model is apparently not precise, however, that is quite *good enough*.
+
+<img src="figures/24_18.png" style="height:150px;"/>
+
+**Static and Dynamic**
+
+In this case static means that there is no influence of the state of the plant on the outcome of an input. Dynamic then again means that a different state $s_t$ leads to a different outcom $y_t$ for the same input $x_t$ as in another state.
+
+This can be incorporated in a *Distal Teacher with State* model. And the training actually is some sort of RNN training through time.
+
+The teacher idea is:
+* environment teaches forward model
+* forward model teaches controller/ inverse model
+
+<img src="figures/24_23.png" style="height:150px;"/>
+
+Lastly some application examples are given
+* Truck Backer-Upper
+* Arm dynamics
+
 
 # 25 - Summary Lecture
 
