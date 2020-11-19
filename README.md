@@ -1547,7 +1547,7 @@ Models for End-to-End Dialog learning
   * Many-to-Many
   * gradient vanishing and exploding
     * vanishing: LSTM
-    * exploding: clipping
+    * exploding: clipping, normalization, weight decay
 
 * S2S
   * use two RNNs
